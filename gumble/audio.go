@@ -15,7 +15,7 @@ const (
 
 	// AudioDefaultFrameSize is the number of audio frames that should be sent in
 	// a 10ms window.
-	AudioDefaultFrameSize = AudioSampleRate / 100
+	AudioDefaultFrameSize = (AudioSampleRate / 100) * AudioChannels
 
 	// AudioMaximumFrameSize is the maximum audio frame size from another user
 	// that will be processed.
@@ -27,7 +27,7 @@ const (
 
 	// AudioChannels is the number of audio channels that are contained in an
 	// audio stream.
-	AudioChannels = 1
+	AudioChannels = 2
 )
 
 // AudioListener is the interface that must be implemented by types wishing to
@@ -56,7 +56,7 @@ func (a AudioBuffer) writeAudio(client *Client, seq int64, final bool) error {
 		return nil
 	}
 	dataBytes := client.Config.AudioDataBytes
-	raw, err := encoder.Encode(a, len(a), dataBytes)
+	raw, err := encoder.Encode(a, len(a)/AudioChannels, dataBytes)
 	if final {
 		defer encoder.Reset()
 	}
