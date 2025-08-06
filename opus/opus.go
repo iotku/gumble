@@ -1,7 +1,9 @@
 package opus
 
 import (
-	"layeh.com/gopus"
+	"log"
+
+	gopus "gopkg.in/hraban/opus.v2"
 	"layeh.com/gumble/gumble"
 )
 
@@ -24,8 +26,8 @@ func (*generator) ID() int {
 }
 
 func (*generator) NewEncoder() gumble.AudioEncoder {
-	e, _ := gopus.NewEncoder(gumble.AudioSampleRate, gumble.AudioChannels, gopus.Voip)
-	e.SetBitrate(gopus.BitrateMaximum)
+	e, _ := gopus.NewEncoder(gumble.AudioSampleRate, gumble.AudioChannels, gopus.AppVoIP) // TODO: Maybe we can use .AppAudio?
+	e.SetBitrate(96000)                                                                   // TODO: Don't hardcode this
 	return &Encoder{
 		e,
 	}
@@ -49,11 +51,16 @@ func (*Encoder) ID() int {
 }
 
 func (e *Encoder) Encode(pcm []int16, mframeSize, maxDataBytes int) ([]byte, error) {
-	return e.Encoder.Encode(pcm, mframeSize, maxDataBytes)
+	targetBuffer := make([]byte, maxDataBytes)
+	n, err := e.Encoder.Encode(pcm, targetBuffer)
+	if err != nil {
+		return nil, err
+	}
+	return targetBuffer[:n], nil
 }
 
 func (e *Encoder) Reset() {
-	e.Encoder.ResetState()
+	e.Encoder.Reset()
 }
 
 // decoder
@@ -67,9 +74,15 @@ func (*Decoder) ID() int {
 }
 
 func (d *Decoder) Decode(data []byte, frameSize int) ([]int16, error) {
-	return d.Decoder.Decode(data, frameSize, false)
+	targetBuffer := make([]int16, frameSize*gumble.AudioChannels)
+	n, err := d.Decoder.Decode(data, targetBuffer)
+	if err != nil {
+		return nil, err
+	}
+	return targetBuffer[:n], nil
 }
 
 func (d *Decoder) Reset() {
-	d.Decoder.ResetState()
+	log.Fatalln("Tried to use decoder reset, NOT IMPLEMENTED") // TODO: I don't think this is ever used, but we're going to find out!!!!
+	// d.Decoder.Reset() // TODO: This method doesn't exist in hraban
 }
