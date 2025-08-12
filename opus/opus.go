@@ -27,8 +27,8 @@ func (*generator) ID() int {
 
 func (*generator) NewEncoder() gumble.AudioEncoder {
 	log.Println("Created new hraban/opus Encoder")
-	e, _ := gopus.NewEncoder(gumble.AudioSampleRate, gumble.AudioChannels, gopus.AppVoIP) // TODO: Maybe we can use .AppAudio?
-	e.SetBitrate(192000)                                                                  // TODO: Don't hardcode this
+	e, _ := gopus.NewEncoder(gumble.AudioSampleRate, gumble.AudioChannels, gopus.AppAudio)
+	e.SetBitrate(192000) // TODO: Don't hardcode this?
 	return &Encoder{
 		e,
 	}
